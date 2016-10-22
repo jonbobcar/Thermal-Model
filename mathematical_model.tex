@@ -74,6 +74,9 @@ The problem with the corners was fixed last night. Writing the $3\times3$ \textb
 \section{October 4}
 Revised mathematical equations so that heat transfer from the top and bottom of the elements are controlled by convection instead of a constant power input. This puts those sources into the A matrix. $Q_{OT}$ and $Q_{OB}$ are now $Q_{s} = h_{t}AT_{c}$ and $Q_{s} = h_{b}AT_{c}$, respectively.
 
+\section{October 22}
+Created GitHub repository and uploaded files, including an old April version of the thermal model. Initial test of that file showed that it didn't run. Not sure what the problem was, but it should be easy to get that code working if there is a need for an earlier version.
+
 \section{Introduction}
 The objective of this paper is to develop and simulate a two dimensional mathematical thermal model for a laminate printed circuit board (PCB) with internal heat generation. The PCB is constructed of layers of FR4 and etched copper laminated together. As shown in \autoref{fig:pcb}, there are multiple, alternating layers of FR4 and etched copper within the PCB. The PCB will generate heat through internally printed copper circuit layers when power is applied to the circuit. The PCB will be simulated as powered in still room temperature air, where the only heat loss is due to convection from the surface of the PCB. The top, bottom, and side surfaces of the PCB are subject to heat loss, however the PCB is very thin compared to its length and width, so it may be simulated as adiabatic along its edge.
 
