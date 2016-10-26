@@ -33,17 +33,17 @@ x0 = tempInit * ones(n*m,1);
 % Properties for Copper
 cp = 840; % J/(kg-K)
 p = 1850; % kg/m^3
-tmax = 10000; % run time: seconds
+tmax = 600; % run time: seconds
 ks = 100; % W/(m-K)
 L = .16; % length: meter
 th = .18; % thickness: meter
-Qs = 5; % Value of step power input
+Qs = 15; % Value of step power input
 area = L^2;
-Qos = 5/n; % Value of step power loss Side
+Qos = -5; % Value of step power loss Side
 h_t = 1; % Convection coefficient from top
 h_b = 1; % Convection coefficient from bottom
-Qot = 1; % Value of step power loss Top
-Qob = 1; % Value of step power loss Bottom
+Qot = -5/n; % Value of step power loss Top
+Qob = -1/n; % Value of step power loss Bottom
 
 
 % Time Step and Vector
@@ -69,7 +69,7 @@ uQot(1:length(t),1) = Qot;
 uQob(1:length(t),1) = Qob;
 
 % Combine inputs for lsim
-u = [uQs];
+u = [uQs uQos uQot uQob];
 
 % u = Qs * zeros(length(t),1); %step function; for all time, input = Qs
 % Qsu = Qs * ones(10,1);
@@ -161,19 +161,19 @@ timeDiag = toc;
 
 % Input Vectors (Bi = Heat in; Bot,Bob,Bos = Heat out (top,bottom,side))
 Bi = zeros(n*m,1);
-% Bot = zeros(n*m,1);
-% Bob = ones(n*m,1);
-% Bos = zeros(n*m,1);
+Bot = zeros(n*m,1);
+Bob = ones(n*m,1);
+Bos = zeros(n*m,1);
 
 %% Control for where heat is input by changing B to weight specific nodes.
 
 % Bi = 1/(C*R)*heatZoneV;
 
 % Bi = ones(n*m,1); Bi = (1/(C*R))*Bi;
-Bi(ceil(m*n/2)) = 1/(C*R); % Center Element
+% Bi(ceil(m*n/2)) = 1/(C*R); % Center Element
 % Bi(1) = 1/(C*R); % First Element
-% Bi(m*n-(n-1):m*n) = 1/(C*R); % All Right Edge
-% Bi(n) = 1/(C*R);
+Bi(m*n-(n-1):m*n) = 1/(C*R); % All Right Edge
+Bi(1:n) = 1/(C*R); % All Left Edge
 % Bi(m*n-(floor(n/2))) = 1/(C*R);
 % Bi(n+2) = 1/(C*R);
 % Bi(n) = 1/(C*R);
@@ -188,10 +188,10 @@ Bi(ceil(m*n/2)) = 1/(C*R); % Center Element
 
 % Bot(m*n-(n-1):m*n) = 1/(C*R);
 
-% Bot = (1/(C*R))*Bot;
-% Bob = (1/(C*R))*Bob;
-% Bos = (1/(C*R))*Bos;
-B = [Bi];
+Bot = (1/(C*R))*Bot;
+Bob = (1/(C*R))*Bob;
+Bos = (1/(C*R))*Bos;
+B = [Bi Bot Bob Bos];
 
 % B = B * 1/(C*R);
 
