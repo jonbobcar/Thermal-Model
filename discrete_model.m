@@ -1,8 +1,11 @@
 clear all; close all;
 
+% 2D Thermal Model for a thin plate with zoned internal heat generation
+
 %% Printing Options
 simTitle = 'test';
-% Change prnt to 'yes' to enable the printing to .eps at end of code
+% Prompts whether to print a new plot when the script is run
+% Will plot and save file with some descriptive filename
 % Fix .eps printing to tikz printing someday
 prompt = 'Should the Temperature Response and Transient Gradient plots be printed? [Y/n]';
 prnt = input(prompt,'s');
@@ -30,17 +33,17 @@ x0 = tempInit * ones(n*m,1);
 % Properties for Copper
 cp = 840; % J/(kg-K)
 p = 1850; % kg/m^3
-tmax = 10000; % run time: seconds
+tmax = 600; % run time: seconds
 ks = 100; % W/(m-K)
 L = .16; % length: meter
 th = .18; % thickness: meter
-Qs = 5; % Value of step power input
+Qs = 15; % Value of step power input
 area = L^2;
-% Qos = 5/n; % Value of step power loss Side
+Qos = -5; % Value of step power loss Side
 h_t = 1; % Convection coefficient from top
 h_b = 1; % Convection coefficient from bottom
-Qot = h_t*area; % Value of step power loss Top
-Qob = h_b*area; % Value of step power loss Bottom
+Qot = -5/n; % Value of step power loss Top
+Qob = -1/n; % Value of step power loss Bottom
 
 
 % Time Step and Vector
@@ -55,18 +58,18 @@ R = dx/(ks*a); % thermal resistance
 
 % Inputs vectors (power input and power loss)
 uQs = zeros(length(t),1);
-% uQot = zeros(length(t),1);
-% uQob = zeros(length(t),1);
-% uQos = zeros(length(t),1);
+uQot = zeros(length(t),1);
+uQob = zeros(length(t),1);
+uQos = zeros(length(t),1);
 
 % Power Input Vector (used to set time power is on or off)
 uQs(1:length(t),1) = Qs;
-% uQos(1:length(t),1) = Qos;
-% uQot(1:length(t),1) = Qot;
-% uQob(1:length(t),1) = Qob;
+uQos(1:length(t),1) = Qos;
+uQot(1:length(t),1) = Qot;
+uQob(1:length(t),1) = Qob;
 
 % Combine inputs for lsim
-u = [uQs];
+u = [uQs uQos uQot uQob];
 
 % u = Qs * zeros(length(t),1); %step function; for all time, input = Qs
 % Qsu = Qs * ones(10,1);
@@ -158,19 +161,19 @@ timeDiag = toc;
 
 % Input Vectors (Bi = Heat in; Bot,Bob,Bos = Heat out (top,bottom,side))
 Bi = zeros(n*m,1);
-% Bot = zeros(n*m,1);
-% Bob = ones(n*m,1);
-% Bos = zeros(n*m,1);
+Bot = zeros(n*m,1);
+Bob = ones(n*m,1);
+Bos = zeros(n*m,1);
 
 %% Control for where heat is input by changing B to weight specific nodes.
 
 % Bi = 1/(C*R)*heatZoneV;
 
 % Bi = ones(n*m,1); Bi = (1/(C*R))*Bi;
-Bi(ceil(m*n/2)) = 1/(C*R); % Center Element
+% Bi(ceil(m*n/2)) = 1/(C*R); % Center Element
 % Bi(1) = 1/(C*R); % First Element
-% Bi(m*n-(n-1):m*n) = 1/(C*R); % All Right Edge
-% Bi(n) = 1/(C*R);
+Bi(m*n-(n-1):m*n) = 1/(C*R); % All Right Edge
+Bi(1:n) = 1/(C*R); % All Left Edge
 % Bi(m*n-(floor(n/2))) = 1/(C*R);
 % Bi(n+2) = 1/(C*R);
 % Bi(n) = 1/(C*R);
@@ -185,10 +188,10 @@ Bi(ceil(m*n/2)) = 1/(C*R); % Center Element
 
 % Bot(m*n-(n-1):m*n) = 1/(C*R);
 
-% Bot = (1/(C*R))*Bot;
-% Bob = (1/(C*R))*Bob;
-% Bos = (1/(C*R))*Bos;
-B = [Bi];
+Bot = (1/(C*R))*Bot;
+Bob = (1/(C*R))*Bob;
+Bos = (1/(C*R))*Bos;
+B = [Bi Bot Bob Bos];
 
 % B = B * 1/(C*R);
 
