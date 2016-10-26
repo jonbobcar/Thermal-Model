@@ -1,8 +1,11 @@
 clear all; close all;
 
+% 2D Thermal Model for a thin plate with zoned internal heat generation
+
 %% Printing Options
 simTitle = 'test';
-% Change prnt to 'yes' to enable the printing to .eps at end of code
+% Prompts whether to print a new plot when the script is run
+% Will plot and save file with some descriptive filename
 % Fix .eps printing to tikz printing someday
 prompt = 'Should the Temperature Response and Transient Gradient plots be printed? [Y/n]';
 prnt = input(prompt,'s');
@@ -36,11 +39,11 @@ L = .16; % length: meter
 th = .18; % thickness: meter
 Qs = 5; % Value of step power input
 area = L^2;
-% Qos = 5/n; % Value of step power loss Side
+Qos = 5/n; % Value of step power loss Side
 h_t = 1; % Convection coefficient from top
 h_b = 1; % Convection coefficient from bottom
-Qot = h_t*area; % Value of step power loss Top
-Qob = h_b*area; % Value of step power loss Bottom
+Qot = 1; % Value of step power loss Top
+Qob = 1; % Value of step power loss Bottom
 
 
 % Time Step and Vector
@@ -55,15 +58,15 @@ R = dx/(ks*a); % thermal resistance
 
 % Inputs vectors (power input and power loss)
 uQs = zeros(length(t),1);
-% uQot = zeros(length(t),1);
-% uQob = zeros(length(t),1);
-% uQos = zeros(length(t),1);
+uQot = zeros(length(t),1);
+uQob = zeros(length(t),1);
+uQos = zeros(length(t),1);
 
 % Power Input Vector (used to set time power is on or off)
 uQs(1:length(t),1) = Qs;
-% uQos(1:length(t),1) = Qos;
-% uQot(1:length(t),1) = Qot;
-% uQob(1:length(t),1) = Qob;
+uQos(1:length(t),1) = Qos;
+uQot(1:length(t),1) = Qot;
+uQob(1:length(t),1) = Qob;
 
 % Combine inputs for lsim
 u = [uQs];
