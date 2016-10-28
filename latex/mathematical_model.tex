@@ -77,6 +77,11 @@ Revised mathematical equations so that heat transfer from the top and bottom of 
 \section{October 22}
 Created GitHub repository and uploaded files, including an old April version of the thermal model. Initial test of that file showed that it didn't run. Not sure what the problem was, but it should be easy to get that code working if there is a need for an earlier version.
 
+\section{October 25}
+Thermal model was broken for a short time while I changed too much in an initial attempt to convert power output to convection. I was able to get the model back into a working state, but I still need to check that everything is functioning as it should again. This problem occurred during the October 4th update, and motivated the GitHub addition to help with revision and change control. Still need to continue making the convection version of the model work.
+
+Design for the physical test articles is finished and needs to be sent to manufacture. There are four designs on a single PCB sheet which will have to be cut after they are received. This was done to save money on the purchase.
+
 \section{Introduction}
 The objective of this paper is to develop and simulate a two dimensional mathematical thermal model for a laminate printed circuit board (PCB) with internal heat generation. The PCB is constructed of layers of FR4 and etched copper laminated together. As shown in \autoref{fig:pcb}, there are multiple, alternating layers of FR4 and etched copper within the PCB. The PCB will generate heat through internally printed copper circuit layers when power is applied to the circuit. The PCB will be simulated as powered in still room temperature air, where the only heat loss is due to convection from the surface of the PCB. The top, bottom, and side surfaces of the PCB are subject to heat loss, however the PCB is very thin compared to its length and width, so it may be simulated as adiabatic along its edge.
 
