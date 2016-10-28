@@ -30,20 +30,20 @@ tempInit = 0;
 
 x0 = tempInit * ones(n*m,1);
 
-% Properties for Copper
+% Properties for somematerial (R)
 cp = 840; % J/(kg-K)
 p = 1850; % kg/m^3
 tmax = 600; % run time: seconds
-ks = 100; % W/(m-K)
+ks = 10; % W/(m-K)
 L = .16; % length: meter
 th = .18; % thickness: meter
 Qs = 15; % Value of step power input
 area = L^2;
-Qos = -5; % Value of step power loss Side
-h_t = 1; % Convection coefficient from top
-h_b = 1; % Convection coefficient from bottom
-Qot = -5/n; % Value of step power loss Top
-Qob = -1/n; % Value of step power loss Bottom
+Qos = 0; % Value of step power loss Side
+h_t = 1; % Convection coefficient at top
+h_b = 1; % Convection coefficient at bottom
+Qot = 0; % Value of step power loss Top
+Qob = 0; % Value of step power loss Bottom
 
 
 % Time Step and Vector
@@ -56,34 +56,16 @@ a = dx*th; % cross sectional area of node
 C = cp*dx*a*p; % thermal capacitance
 R = dx/(ks*a); % thermal resistance
 
-% Inputs vectors (power input and power loss)
-uQs = zeros(length(t),1);
-uQot = zeros(length(t),1);
-uQob = zeros(length(t),1);
-uQos = zeros(length(t),1);
-
-% Power Input Vector (used to set time power is on or off)
-uQs(1:length(t),1) = Qs;
-uQos(1:length(t),1) = Qos;
-uQot(1:length(t),1) = Qot;
-uQob(1:length(t),1) = Qob;
-
-% Combine inputs for lsim
-u = [uQs uQos uQot uQob];
-
-% u = Qs * zeros(length(t),1); %step function; for all time, input = Qs
-% Qsu = Qs * ones(10,1);
-% u(1:10) = Qsu;
-
 %% Setup A Matrix
 tic
 
 %% Main diagonal construction: coefficient of i,j element
 % Coefficient value for internal elements are inserted at every location, 
 % then replaced if the element is on an edge.
-Aa = (-(4*R^3)/(C*R^4))*ones(n*m,1)+Qob+Qot; % Value of C_i,j for internal elements
+Aa = (-(4*R^3)/(C*R^4))*ones(n*m,1); % Value of C_i,j for internal elements
 Aa(1:n) = -(3*R^2)/(C*R^3); % Value of C_i,j for left edge replacement
-Aa(n*m-(n-1):n*m) = -(3*R^2)/(C*R^3); % Value of C_i,j for right edge replacement
+Aa(n*m-(n-1):n*m) = -(3*R^2)/(C*R^3); % Value of C_i,j for right edge 
+%    replacement
 
 % This loop modifies the C_i,j value for edge elements along the top and
 % bottom of the grid by checking if they are an even multiple of n or are 
@@ -172,12 +154,12 @@ Bos = zeros(n*m,1);
 % Bi = ones(n*m,1); Bi = (1/(C*R))*Bi;
 % Bi(ceil(m*n/2)) = 1/(C*R); % Center Element
 % Bi(1) = 1/(C*R); % First Element
-Bi(m*n-(n-1):m*n) = 1/(C*R); % All Right Edge
-Bi(1:n) = 1/(C*R); % All Left Edge
+% Bi(m*n-(n-1):m*n) = 1/(C*R); % All Right Edge
+% Bi(1:n) = 1/(C*R); % All Left Edge
 % Bi(m*n-(floor(n/2))) = 1/(C*R);
 % Bi(n+2) = 1/(C*R);
-% Bi(n) = 1/(C*R);
-% Bi(1654:2278) = 1/(C*R);
+Bi(N) = 1/(C*R); % Last Element
+Bi(110:167) = 1/(C*R); % Some Random Elements
 
 % Bos(1:n) = 1/(C*R); % All Left Edge
 % Bos(m*n-(n-1):m*n) = 1/(R*C); % All Right Edge
@@ -194,6 +176,26 @@ Bos = (1/(C*R))*Bos;
 B = [Bi Bot Bob Bos];
 
 % B = B * 1/(C*R);
+
+%% Power Input
+% Inputs vectors (power input and power loss)
+uQs = zeros(length(t),1);
+uQot = zeros(length(t),1);
+uQob = zeros(length(t),1);
+uQos = zeros(length(t),1);
+
+% Power Input Vector (used to set time power is on or off)
+uQs(1:length(t)/2,1) = Qs/(nnz(Bi));
+uQos(1:length(t),1) = Qos;
+uQot(1:length(t),1) = Qot/N;
+uQob(1:length(t),1) = Qob/N;
+
+% Combine inputs for lsim
+u = [uQs uQos uQot uQob];
+
+% u = Qs * zeros(length(t),1); %step function; for all time, input = Qs
+% Qsu = Qs * ones(10,1);
+% u(1:10) = Qsu;
 
 %% Output vectors for SS
 
@@ -229,7 +231,8 @@ g = 4;
 
 for j = 1:g
     subplot(g/2,2,j)
-    contourf(M(:,:,j*floor(length(t)/g)),'ShowText','on','LevelStepMode','manual','LevelStep',tenCont);
+    contourf(M(:,:,j*floor(length(t)/g)),'ShowText','on','LevelStepMode',...
+        'manual','LevelStep',tenCont);
     xlabel('x position (node)'); ylabel('y position (node)')
     lbl = num2str(t(j*floor(length(t)/g)));
     lbl = [lbl,' seconds'];

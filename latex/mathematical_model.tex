@@ -54,7 +54,7 @@
 
 \begin{abstract}
 \noindent
-\blindtext
+There should be an abstract here, instead have some \blindtext
 \end{abstract}
 \vspace{1mm}
 \hrule width \hsize \kern 1pt
@@ -81,6 +81,11 @@ Created GitHub repository and uploaded files, including an old April version of 
 Thermal model was broken for a short time while I changed too much in an initial attempt to convert power output to convection. I was able to get the model back into a working state, but I still need to check that everything is functioning as it should again. This problem occurred during the October 4th update, and motivated the GitHub addition to help with revision and change control. Still need to continue making the convection version of the model work.
 
 Design for the physical test articles is finished and needs to be sent to manufacture. There are four designs on a single PCB sheet which will have to be cut after they are received. This was done to save money on the purchase.
+
+\section{October 28}
+More maintenance on the MATLAB script. I'm trying to clean it up so that it is more readable and concise. I would like to break it into multiple files which each contain key elements. It would be nice if the changeable inputs, matrix creation, simulation, and printing were all in separate files.
+
+There now exists an interesting problem which causes the 2x2 contour plot to not work.
 
 \section{Introduction}
 The objective of this paper is to develop and simulate a two dimensional mathematical thermal model for a laminate printed circuit board (PCB) with internal heat generation. The PCB is constructed of layers of FR4 and etched copper laminated together. As shown in \autoref{fig:pcb}, there are multiple, alternating layers of FR4 and etched copper within the PCB. The PCB will generate heat through internally printed copper circuit layers when power is applied to the circuit. The PCB will be simulated as powered in still room temperature air, where the only heat loss is due to convection from the surface of the PCB. The top, bottom, and side surfaces of the PCB are subject to heat loss, however the PCB is very thin compared to its length and width, so it may be simulated as adiabatic along its edge.
