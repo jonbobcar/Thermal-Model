@@ -87,6 +87,9 @@ More maintenance on the MATLAB script. I'm trying to clean it up so that it is m
 
 There now exists an interesting problem which causes the 2x2 contour plot to not work.
 
+\section{October 29}
+Convection is now added to the model. It is untested, but initial plots show that the temperature will exponentially approach the initial condition if power input is removed. See \autoref{fig:TmpRspnConvectionOct29,it0,pi150}. Convection appears to be working as intended, but the physical values for this plot are all made up.
+
 \section{Introduction}
 The objective of this paper is to develop and simulate a two dimensional mathematical thermal model for a laminate printed circuit board (PCB) with internal heat generation. The PCB is constructed of layers of FR4 and etched copper laminated together. As shown in \autoref{fig:pcb}, there are multiple, alternating layers of FR4 and etched copper within the PCB. The PCB will generate heat through internally printed copper circuit layers when power is applied to the circuit. The PCB will be simulated as powered in still room temperature air, where the only heat loss is due to convection from the surface of the PCB. The top, bottom, and side surfaces of the PCB are subject to heat loss, however the PCB is very thin compared to its length and width, so it may be simulated as adiabatic along its edge.
 
@@ -133,6 +136,13 @@ The PCB is modeled as a discrete finite elements model with $n \times m$ square 
 	\includegraphics[width=0.8\linewidth]{TmpRspn25x25,15Wleftedge,-15Wrightedge,halftime.eps}
 	\caption{Temperature response for five elements in model with 20 degree initial temperature. 15 watts total is applied to the left edge of the plate. 15 watts total are drawn from the right edge of the plate. All other surfaces of the plate are adiabatic. Power input and loss is stopped one third of the way through the simulation time. The simulation is ran for 1800 seconds to achieve steady state.}
 	\label{fig:TmpRspn25x25,15Wleftedge,-15Wrightedge,halftime}
+\end{figure}
+
+\begin{figure}
+	\center
+	\includegraphics[width=0.8\linewidth]{TmpRspnConvectionOct29,it0,pi150.eps}
+	\caption{First temperature response plot with convection added to the model. Power input was total 150 W applied to some random areas on the model to separate the curves on this plot. Initial temperature was 0 and it is shown that the model is exponentially returning to the I.C. indicating that convection is working as intended.}
+	\label{fig:TmpRspnConvectionOct29,it0,pi150}
 \end{figure}
 
 
