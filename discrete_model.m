@@ -3,7 +3,7 @@ clear all; close all;
 % 2D Thermal Model for a thin plate with zoned internal heat generation
 
 %% Printing Options
-simTitle = 'ConvectionOct29';
+simTitle = 'Nov2';
 % Prompts whether to print a new plot when the script is run
 % Will plot and save file with some descriptive filename
 % Fix .eps printing to tikz printing someday
@@ -11,19 +11,19 @@ prompt = 'Should the Temperature Response and Transient Gradient plots be printe
 prnt = input(prompt,'s');
 
 %% Node Control from .csv
-% heatZone = csvread('SnakeInput.csv');
-% heatZoneSize = size(heatZone);
-% heatZoneV = reshape(heatZone,numel(heatZone),1);
-% inputNodes = sum(heatZoneV);
-% 
-% n = heatZoneSize(1);
-% m = heatZoneSize(2);
-% N = n*m;
+heatZone = csvread('SnakeInput.csv');
+heatZoneSize = size(heatZone);
+heatZoneV = reshape(heatZone,numel(heatZone),1);
+inputNodes = sum(heatZoneV);
+
+n = heatZoneSize(1);
+m = heatZoneSize(2);
+N = n*m;
 
 %% Manual Node Control
-n = 25;
-m = 25;
-N = n*m;
+% n = 49;
+% m = 49;
+% N = n*m;
 
 %% Parameters
 tempInit = 0;
@@ -34,14 +34,14 @@ x0 = tempInit * ones(n*m,1);
 cp = 840; % J/(kg-K)
 p = 1850; % kg/m^3
 tmax = 6000; % run time: seconds
-ks = 10; % W/(m-K)
+ks = 1; % W/(m-K)
 L = .16; % length: meter
 th = .18; % thickness: meter
-Qs = 1500; % Value of step power input
+Qs = 150; % Value of step power input
 area = L^2;
 %%%Qos = -15; % Value of step power loss Side
-h_t = 5; % Convection coefficient at top
-h_b = 1; % Convection coefficient at bottom
+h_t = 50; % Convection coefficient at top
+h_b = 10; % Convection coefficient at bottom
 Qot = -h_t*(area/N); % Value of step power loss Top
 Qob = -h_b*(area/N); % Value of step power loss Bottom
 %%%Qot = 1;
@@ -151,7 +151,7 @@ Bi = zeros(n*m,1);
 
 %% Control for where heat is input by changing B to weight specific nodes.
 
-% Bi = 1/(C*R)*heatZoneV;
+Bi = 1/(C*R)*heatZoneV;
 
 % Bi = ones(n*m,1); Bi = (1/(C*R))*Bi;
 % Bi(ceil(m*n/2)) = 1/(C*R); % Center Element
@@ -161,8 +161,8 @@ Bi = zeros(n*m,1);
 % Bi(m*n-(floor(n/2))) = 1/(C*R);
 % Bi(n+2) = 1/(C*R);
 % Bi(N) = 1/(C*R); % Last Element
-Bi(29:70) = 1/(C*R); % Some Random Elements
-Bi(587:615) = 1/(C*R); % Some Random Elements
+% Bi(29:70) = 1/(C*R); % Some Random Elements
+% Bi(587:615) = 1/(C*R); % Some Random Elements
 
 % Bos(1:n) = 1/(C*R); % All Left Edge
 % Bos(m*n-(n-1):m*n) = 1/(R*C); % All Right Edge
@@ -190,10 +190,10 @@ uQs = zeros(length(t),1);
 %%%uQos = zeros(length(t),1);
 
 % Power Input Vector (used to set time power is on or off)
-uQs(1:length(t)/3,1) = Qs/(nnz(Bi));
+uQs(1:length(t),1) = Qs/(nnz(Bi));
 %%%uQos(1:length(t)/3,1) = Qos/(nnz(Bi));
 
-uQs((length(t)-length(t)/3):length(t),1) = Qs/(nnz(Bi));
+% uQs((length(t)-length(t)/3):length(t),1) = Qs/(nnz(Bi));
 %uQos((length(t)-length(t)/3):length(t),1) = Qos/(nnz(Bi));
 %%%uQot(1:length(t),1) = Qot/N;
 %%%uQob(1:length(t),1) = Qob/N;
@@ -219,6 +219,7 @@ y = lsim(sys,u,t,x0);
 timeSim = toc;
 
 %% Reorder results into element grid and plot/print contours
+timecode = num2str(now);
 
 for i = 0:n-1
     for j = 2:length(t)-1
@@ -248,24 +249,33 @@ for j = 1:g
     set(gca,'Ydir','reverse');
     axis equal
 end
-pathStr = '/Users/jonathon/Documents/Thesis/GitRepo/Thermal-Model/latex/figures/CtrTnst';
+pathStr = '/Users/jonathon/Documents/Thesis/GitRepo/Thermal-Model/latex/figures/';
 tempInitStr = [',it' num2str(tempInit)];
 powerInputStr = [',pi' num2str(Qs)];
-pathStr = strcat(pathStr,simTitle,tempInitStr,powerInputStr);
+nameStr = 'Transient';
+pathStr = strcat(pathStr,simTitle,nameStr,tempInitStr,powerInputStr);
 if strcmp(prnt,'Y') == 1
     print(pathStr,'-depsc')
 else
 end
 
 figure
+
 contourf(M(:,:,length(t)-1),10,'ShowText','on');
 grid on
 xlabel('x position (node)'); ylabel('y position (node)')
 lbl = num2str(t(end));
 lbl = [lbl,' seconds'];
-ttl = ['Time = ',lbl]; title(ttl);
+ttl = ['Temperature Distribution at ',lbl]; title(ttl);
 set(gca,'Ydir','reverse');
 axis equal
+pathStr = '/Users/jonathon/Documents/Thesis/GitRepo/Thermal-Model/latex/figures/';
+nameStr = 'Dist';
+pathStr = strcat(pathStr,simTitle,nameStr,tempInitStr,powerInputStr);
+if strcmp(prnt,'Y') == 1
+    print(pathStr,'-depsc')
+else
+end
 
 figure
 plot(t,y(:,1),'LineWidth',2)
@@ -276,8 +286,10 @@ plot(t,y(:,m*n-(n-1)),'--','LineWidth',2)
 plot(t,y(:,ceil(m*n/2)),'LineWidth',2)
 xlabel('Time (seconds)'); ylabel('Temperature (Degrees Celcius)');
 legend('Bottom Left','Top Left','Top Right','Bottom Right','Center Element')
-pathStr = '/Users/jonathon/Documents/Thesis/GitRepo/Thermal-Model/latex/figures/TmpRspn';
-pathStr = strcat(pathStr,simTitle,tempInitStr,powerInputStr);
+title('Temperature Response')
+pathStr = '/Users/jonathon/Documents/Thesis/GitRepo/Thermal-Model/latex/figures/';
+nameStr = 'Response';
+pathStr = strcat(pathStr,simTitle,nameStr,tempInitStr,powerInputStr);
 if strcmp(prnt,'Y') == 1
     print(pathStr,'-depsc')
 else
@@ -291,4 +303,25 @@ if timeSim <= 60
 else
     disp(['Simulation Run time = ',timeSimMin,' minutes'])
 end
+
+figure
+for i = 0:n-1
+    powerMap(:,i+1) = B(i*n+1:i*n+n,1);
+end
+powerMap = [powerMap zeros(n,1)]; powerMap = [powerMap;zeros(1,n+1)];
+pcolor(powerMap);
+colormap(gray(2));
+colormap(flipud(colormap));
+xlabel('x position (node)'); ylabel('y position (node)')
+set(gca,'Ydir','reverse'); set(gca,'YTick',[]); set(gca,'XTick',[]);
+axis square
+title('Power Input Map')
+pathStr = '/Users/jonathon/Documents/Thesis/GitRepo/Thermal-Model/latex/figures/';
+nameStr = 'Map';
+pathStr = strcat(pathStr,simTitle,nameStr,tempInitStr,powerInputStr);
+if strcmp(prnt,'Y') == 1
+    print(pathStr,'-depsc')
+else
+end
+
 beep
