@@ -1,4 +1,4 @@
-clear all; close all;
+clear; close all;
 
 % 2D Thermal Model for a thin plate with zoned internal heat generation
 
