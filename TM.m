@@ -1,4 +1,4 @@
-clear; close all;
+clear all; close all;
 
 % 2D Thermal Model for a thin plate with zoned internal heat generation
 
@@ -12,7 +12,7 @@ prnt = input(prompt,'s');
 
 %% Node Control from .csv
 heatZone = csvread('SnakeInput.csv');
-heatZoneSize = size(heataZone);
+heatZoneSize = size(heatZone);
 heatZoneV = reshape(heatZone,numel(heatZone),1);
 inputNodes = sum(heatZoneV);
 
@@ -30,11 +30,10 @@ tempInit = 0;
 
 x0 = tempInit * ones(n*m,1);
 
+load prop.mat
+
 % Properties for somematerial (R)
-cp = 840; % J/(kg-K)
-p = 1850; % kg/m^3
 tmax = 6000; % run time: seconds
-ks = 10; % W/(m-K)
 L = .16; % length: meter
 th = .18; % thickness: meter
 Qs = 190; % Value of step power input
@@ -291,6 +290,9 @@ else
 end
 
 figure
+for i = 0:n-1
+    powerMap(:,i+1) = B(i*n+1:i*n+n,1);
+end
 powerMap = [heatZone zeros(n,1)]; powerMap = [powerMap;zeros(1,n+1)];
 pcolor(powerMap);
 colormap(gray(2));
