@@ -1,4 +1,4 @@
-clear; close all;
+clear all; close all;
 
 % 2D Thermal Model for a thin plate with zoned internal heat generation
 
@@ -30,11 +30,10 @@ tempInit = 0;
 
 x0 = tempInit * ones(n*m,1);
 
+load prop.mat
+
 % Properties for somematerial (R)
-cp = 840; % J/(kg-K)
-p = 1850; % kg/m^3
 tmax = 6000; % run time: seconds
-ks = 10; % W/(m-K)
 L = .16; % length: meter
 th = .18; % thickness: meter
 Qs = 190; % Value of step power input
@@ -230,15 +229,86 @@ end
 tempFinal = y(end,:);
 maxTemp = max(tempFinal);
 minTemp = min(tempFinal);
-
-tenCont = floor((maxTemp-minTemp)/10);
+% tenCont = floor((maxTemp-minTemp)/10);
+tenCont = 10;
+tempInitStr = [',it' num2str(tempInit)];
+powerInputStr = [',pi' num2str(Qs)];
 
 M1 = M(:,:,2);
 
-plots_script
+% figure
+% 
+% g = 4;
+% 
+% for j = 1:g
+%     subplot(g/2,2,j)
+%     contourf(M(:,:,j*floor(length(t)/g)),'ShowText','on','LevelStepMode',...
+%         'manual','LevelStep',tenCont);
+%     xlabel('x position (node)'); ylabel('y position (node)')
+%     lbl = num2str(t(j*floor(length(t)/g)));
+%     lbl = [lbl,' seconds'];
+%     ttl = ['Time = ',lbl]; title(ttl);
+%     set(gca,'Ydir','reverse');
+%     axis equal
+% end
+% pathStr = '/Users/jonathon/Documents/Thesis/GitRepo/Thermal-Model/latex/figures/';
 
-<<<<<<< HEAD
-=======
+% nameStr = 'Transient';
+% pathStr = strcat(pathStr,simTitle,nameStr,tempInitStr,powerInputStr);
+% if strcmp(prnt,'Y') == 1
+%     print(pathStr,'-depsc')
+% else
+% end
+
+bRight = ['Bottom Right (' num2str(n) ',' num2str(n) ')'];
+
+figure
+plot(t,y(:,1),'LineWidth',2)
+hold on
+plot(t,y(:,n),'-.','LineWidth',2)
+plot(t,y(:,m*n),'LineWidth',2)
+plot(t,y(:,m*n-(n-1)),'--','LineWidth',2)
+plot(t,y(:,ceil(m*n/2)),'LineWidth',2)
+xlabel('Time (seconds)'); ylabel('Temperature (Degrees Celcius)');
+legend('Top Left (1,1)','Bottom Left',bRight,'Top Right','Center')
+title('Temperature Response')
+pathStr = '/Users/jonathon/Documents/Thesis/GitRepo/Thermal-Model/latex/figures/';
+nameStr = 'Response';
+pathStr = strcat(pathStr,simTitle,nameStr,tempInitStr,powerInputStr);
+if strcmp(prnt,'Y') == 1
+    print(pathStr,'-depsc')
+else
+end
+
+timeSim/60;
+timeSimSec = num2str(timeSim,3);
+timeSimMin = num2str(timeSim/60,3);
+if timeSim <= 60
+    disp(['Simulation Run time = ',timeSimSec,' seconds'])
+else
+    disp(['Simulation Run time = ',timeSimMin,' minutes'])
+end
+
+figure
+for i = 0:n-1
+    powerMap(:,i+1) = B(i*n+1:i*n+n,1);
+end
+powerMap = [heatZone zeros(n,1)]; powerMap = [powerMap;zeros(1,n+1)];
+pcolor(powerMap);
+colormap(gray(2));
+colormap(flipud(colormap));
+xlabel('x position (node)'); ylabel('y position (node)')
+set(gca,'Ydir','reverse'); set(gca,'YTick',[]); set(gca,'XTick',[]);
+axis square
+title('Power Input Map')
+pathStr = '/Users/jonathon/Documents/Thesis/GitRepo/Thermal-Model/latex/figures/';
+nameStr = 'Map';
+pathStr = strcat(pathStr,simTitle,nameStr,tempInitStr,powerInputStr);
+if strcmp(prnt,'Y') == 1
+    print(pathStr,'-depsc')
+else
+end
+
 figure
 contourf(M(:,:,length(t)-1),10,'ShowText','on');
 grid on
@@ -256,5 +326,4 @@ if strcmp(prnt,'Y') == 1
 else
 end
 
->>>>>>> master
 beep
