@@ -237,21 +237,4 @@ M1 = M(:,:,2);
 
 plots_script
 
-figure
-contourf(M(:,:,length(t)-1),10,'ShowText','on');
-grid on
-xlabel('x position (node)'); ylabel('y position (node)')
-lbl = num2str(t(end));
-lbl = [lbl,' seconds'];
-ttl = ['Temperature Distribution at ',lbl]; title(ttl);
-set(gca,'Ydir','reverse');
-axis equal
-pathStr = '/Users/jonathon/Documents/Thesis/GitRepo/Thermal-Model/latex/figures/';
-nameStr = 'Dist';
-pathStr = strcat(pathStr,simTitle,nameStr,tempInitStr,powerInputStr);
-if strcmp(prnt,'Y') == 1
-    print(pathStr,'-depsc')
-else
-end
-
 beep
