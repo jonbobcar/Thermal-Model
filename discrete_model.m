@@ -7,7 +7,7 @@ simTitle = 'Nov2';
 % Prompts whether to print a new plot when the script is run
 % Will plot and save file with some descriptive filename
 % Fix .eps printing to tikz printing someday
-prompt = 'Print plots to file? [Y/n]';
+prompt = 'Print plots to file? ["Yes" / Literally any other input]';
 prnt = input(prompt,'s');
 
 %% Node Control from .csv
@@ -26,37 +26,37 @@ N = n*m;
 % N = n*m;
 
 %% Parameters
-tempInit = 0;
+tempInitial = 0;
 
-x0 = tempInit * ones(n*m,1);
+initialStates = tempInitial * ones(n*m,1);
 
-% Properties for somematerial (R)
-cp = 840; % J/(kg-K)
-p = 1850; % kg/m^3
-tmax = 6000; % run time: seconds
-ks = 10; % W/(m-K)
-L = .16; % length: meter
-th = .18; % thickness: meter
-Qs = 190; % Value of step power input
-area = L^2;
-%%%Qos = -15; % Value of step power loss Side
-h_t = 15; % Convection coefficient at top
-h_b = 2; % Convection coefficient at bottom
-Qot = -h_t*(area/N); % Value of step power loss Top
-Qob = -h_b*(area/N); % Value of step power loss Bottom
-%%%Qot = 1;
-%%%Qob = 1;
+% Properties for the material
+materialHeatCapacity = 840; % J/(kg-K)
+materialDensity = 1850; % kg/m^3
+symRunTime = 6000; % run time: seconds
+materialConductivity = 10; % W/(m-K)
+plateLength = .16; % length: meter
+plateThickness = .18; % thickness: meter
+powerInput = 190; % Value of step power input (Watts)
+plateArea = plateLength^2;
+%%%powerLossSides = -15; % Value of step power loss Side
+convectionCoeffTop = 15; % Convection coefficient at top
+convectionCoeffBottom = 2; % Convection coefficient at bottom
+powerLossTob = -convectionCoeffTop*(plateArea/N); % Value of step power loss Top
+powerLossBottom = -convectionCoeffBottom*(plateArea/N); % Value of step power loss Bottom
+%%%powerLossTob = 1; % Step value used for debug
+%%%powerLossBottom = 1; % Step value used for debug
 
 
 % Time Step and Vector
-dt = tmax/100;
-t = 0:dt:tmax;
+dt = symRunTime/100;
+timeVector = 0:dt:symRunTime;
 
-dx = L/n; % length between each node
-a = dx*th; % cross sectional area of node
+dx = plateLength/n; % length between each node
+nodeCrossSection = dx*plateThickness; % cross sectional area of node
 
-C = cp*dx*a*p; % thermal capacitance
-R = dx/(ks*a); % thermal resistance
+materialCapacitance = materialHeatCapacity * dx * nodeCrossSection * materialDensity; % thermal capacitance
+materialResistance = dx / (materialConductivity * nodeCrossSection); % thermal resistance
 
 %% Setup A Matrix
 tic
@@ -64,9 +64,9 @@ tic
 %% Main diagonal construction: coefficient of i,j element
 % Coefficient value for internal elements are inserted at every location, 
 % then replaced if the element is on an edge.
-Aa = (-(4*R^3)/(C*R^4)+Qot+Qob)*ones(n*m,1); % Value of C_i,j for internal elements
-Aa(1:n) = -(3*R^2)/(C*R^3)+Qot+Qob; % Value of C_i,j for left edge replacement
-Aa(n*m-(n-1):n*m) = -(3*R^2)/(C*R^3)+Qot+Qob; % Value of C_i,j for right edge 
+tempA1 = (-(4*materialResistance^3)/(materialCapacitance*materialResistance^4)+powerLossTob+powerLossBottom)*ones(n*m,1); % Value of C_i,j for internal elements
+tempA1(1:n) = -(3*materialResistance^2)/(materialCapacitance*materialResistance^3)+powerLossTob+powerLossBottom; % Value of C_i,j for left edge replacement
+tempA1(n*m-(n-1):n*m) = -(3*materialResistance^2)/(materialCapacitance*materialResistance^3)+powerLossTob+powerLossBottom; % Value of C_i,j for right edge 
 %    replacement
 
 % This loop modifies the C_i,j value for edge elements along the top and
@@ -74,160 +74,160 @@ Aa(n*m-(n-1):n*m) = -(3*R^2)/(C*R^3)+Qot+Qob; % Value of C_i,j for right edge
 % one larger than an even multiple of n.
 for i = 1:n*m
     if mod(i,n) == 0
-        Aa(i) = -(3*R^2)/(C*R^3)+Qot+Qob; % Bottom row
+        tempA1(i) = -(3*materialResistance^2)/(materialCapacitance*materialResistance^3)+powerLossTob+powerLossBottom; % Bottom row
     elseif mod(i,n) == 1
-        Aa(i) = -(3*R^2)/(C*R^3)+Qot+Qob; % Top row
+        tempA1(i) = -(3*materialResistance^2)/(materialCapacitance*materialResistance^3)+powerLossTob+powerLossBottom; % Top row
     else
     end
 end
 
 % This block adjusts the corners to the correct coefficient values.
-Aa(1) = -(2*R)/(C*R^2)+Qot+Qob;
-Aa(n) = Aa(1);
-Aa(n*m) = Aa(1);
-Aa(n*m-(n-1)) = Aa(1);
+tempA1(1) = -(2*materialResistance)/(materialCapacitance*materialResistance^2)+powerLossTob+powerLossBottom;
+tempA1(n) = tempA1(1);
+tempA1(n*m) = tempA1(1);
+tempA1(n*m-(n-1)) = tempA1(1);
 
 %% Auxiliary diagonal construction: coefficients of adjacent elements
 
-% Ab will map to two diagonals directly next to the main diagonal and
+% tempA2 will map to two diagonals directly next to the main diagonal and
 % represents resistance between C_i,j and C_i,j(+/-)1 (elements east and
 % west). The A Matrix is constructed by first going down the left column
 % and finishing by going down the right column, so offsetting the diagonal
 % by n rows takes care of removing resistances where there is no element to
 % the east or west.
-Ab = (1/(C*R))*ones(n*m-n,1);
+tempA2 = (1/(materialCapacitance*materialResistance))*ones(n*m-n,1);
 
-% Ac will map to a diagonal which represents resistance between C_i,j and
+% tempA3 will map to a diagonal which represents resistance between C_i,j and
 % C_i-1,j (element south)
-Ac = (1/(C*R))*ones(n*m-1,1);
+tempA3 = (1/(materialCapacitance*materialResistance))*ones(n*m-1,1);
 
-% This loop removes elements from Ac at the bottom edge of the grid array,
+% This loop removes elements from tempA3 at the bottom edge of the grid array,
 % where there is no thermal element to the south.
 for i = 1:n*m-1
     if mod(i,n) == 0
-        Ac(i) = 0;
+        tempA3(i) = 0;
     else
     end
 end
 
-% Ad will map to a diagonal which represents resistance between C_i,j and
+% tempA4 will map to a diagonal which represents resistance between C_i,j and
 % C_i+1,j (element north)
-Ad = (1/(C*R))*ones(n*m-1,1);
+tempA4 = (1/(materialCapacitance*materialResistance))*ones(n*m-1,1);
 
-% This loop removes elements from Ad at the top edge of the grid array,
+% This loop removes elements from tempA4 at the top edge of the grid array,
 % where there is no thermal element to the north.
 for i = 2:n*m-1
     if mod(i,n) == 1
-        Ad(i-1) = 0;
+        tempA4(i-1) = 0;
     else
     end
 end
 
 %% Combine state variable coefficient values into sparse A matrix.
 v = zeros(n,1); % zeroes required to offset east and west edges
-Aba = [v;Ab]; % elements to the east
-Abb = [Ab;v]; % elements to the west
+tempAEast = [v;tempA2]; % elements to the east
+tempAWest = [tempA2;v]; % elements to the west
 v = [0]; % zero required to offset north and south edges
-Ac = [Ac;v]; % elements to the south
-Ad = [v;Ad]; % elements to the north
-% Aa(1) = -1/(C*R);
-% Aa(n*m) = -1/(C*R);
+tempA3 = [tempA3;v]; % elements to the south
+tempA4 = [v;tempA4]; % elements to the north
+% tempA1(1) = -1/(materialCapacitance*materialResistance);
+% tempA1(n*m) = -1/(materialCapacitance*materialResistance);
 
 % Vectors required to create sparse A matrix
-A = [Abb Ac Aa Ad Aba];
+A = [tempAWest tempA3 tempA1 tempA4 tempAEast];
 v = [-n -1 0 1 n]';
 
 A = spdiags(A,v,N,N);
 
-A_full = full(A);
+A_full = full(A); % For visual debugging of A matrix
 
 timeDiag = toc;
 
-% Input Vectors (Bi = Heat in; Bot,Bob,Bos = Heat out (top,bottom,side))
-Bi = zeros(n*m,1);
-%%%Bot = zeros(n*m,1);
-%%%Bob = ones(n*m,1);
-%%%Bos = zeros(n*m,1);
+% Input Vectors (sysBComponents = Heat in; sysBOutTop,sysBOutBottom,sysBOutSide = Heat out (top,bottom,side))
+sysBComponents = zeros(n*m,1);
+%%%sysBOutTop = zeros(n*m,1); Legacy code; Replaced with convection instead of step power loss.
+%%%sysBOutBottom = ones(n*m,1); Legacy code; Replaced with convection instead of step power loss.
+%%%sysBOutSide = zeros(n*m,1); Legacy code; Replaced with convection instead of step power loss.
 
-%% Control for where heat is input by changing B to weight specific nodes.
+%% Control for where heat is input by changing sysB to weight specific nodes. Comment/Uncomment to select. Currently very clumsy. Better to use .csv file.
 
-Bi = 1/(C*R)*heatZoneV;
+sysBComponents = 1/(materialCapacitance*materialResistance)*heatZoneV; % Loads sysB with location information from .csv file.
 
-% Bi = ones(n*m,1); Bi = (1/(C*R))*Bi;
-% Bi(ceil(m*n/2)) = 1/(C*R); % Center Element
-% Bi(1) = 1/(C*R); % First Element
-% Bi(m*n-(n-1):m*n) = 1/(C*R); % All Right Edge
-% Bi(1:n) = 1/(C*R); % All Left Edge
-% Bi(m*n-(floor(n/2))) = 1/(C*R);
-% Bi(n+2) = 1/(C*R);
-% Bi(N) = 1/(C*R); % Last Element
-% Bi(29:70) = 1/(C*R); % Some Random Elements
-% Bi(587:615) = 1/(C*R); % Some Random Elements
+% sysBComponents = ones(n*m,1); sysBComponents = (1/(materialCapacitance*materialResistance))*sysBComponents;
+% sysBComponents(ceil(m*n/2)) = 1/(materialCapacitance*materialResistance); % Center Element
+% sysBComponents(1) = 1/(materialCapacitance*materialResistance); % First Element
+% sysBComponents(m*n-(n-1):m*n) = 1/(materialCapacitance*materialResistance); % All Right Edge
+% sysBComponents(1:n) = 1/(materialCapacitance*materialResistance); % All Left Edge
+% sysBComponents(m*n-(floor(n/2))) = 1/(materialCapacitance*materialResistance);
+% sysBComponents(n+2) = 1/(materialCapacitance*materialResistance);
+% sysBComponents(N) = 1/(materialCapacitance*materialResistance); % Last Element
+% sysBComponents(29:70) = 1/(materialCapacitance*materialResistance); % Some Random Elements
+% sysBComponents(587:615) = 1/(materialCapacitance*materialResistance); % Some Random Elements
 
-% Bos(1:n) = 1/(C*R); % All Left Edge
-% Bos(m*n-(n-1):m*n) = 1/(R*C); % All Right Edge
-% Bos(n*m) = 1/(C*R); % Last Element
-% Bos(1) = 1/(C*R); % First Element
+% sysBOutSide(1:n) = 1/(materialCapacitance*materialResistance); % All Left Edge
+% sysBOutSide(m*n-(n-1):m*n) = 1/(materialResistance*materialCapacitance); % All Right Edge
+% sysBOutSide(n*m) = 1/(materialCapacitance*materialResistance); % Last Element
+% sysBOutSide(1) = 1/(materialCapacitance*materialResistance); % First Element
 
 %% Input vectors for SS
 
-% Bot(m*n-(n-1):m*n) = 1/(C*R);
+% sysBOutTop(m*n-(n-1):m*n) = 1/(materialCapacitance*materialResistance);
 
-%%%Bot = (1/(C*R))*Bot;
-%%%Bob = (1/(C*R))*Bob;
-%%%Bos = (1/(C*R))*Bos;
-%%%B = [Bi Bot Bob Bos];
+%%%sysBOutTop = (1/(materialCapacitance*materialResistance))*sysBOutTop;
+%%%sysBOutBottom = (1/(materialCapacitance*materialResistance))*sysBOutBottom;
+%%%sysBOutSide = (1/(materialCapacitance*materialResistance))*sysBOutSide;
+%%%sysB = [sysBComponents sysBOutTop sysBOutBottom sysBOutSide];
 
-B = [Bi];
+sysB = [sysBComponents];
 
-% B = B * 1/(C*R);
+% sysB = sysB * 1/(materialCapacitance*materialResistance);
 
 %% Power Input
 % Inputs vectors (power input and power loss)
-uQs = zeros(length(t),1);
-%%%uQot = zeros(length(t),1);
-%%%uQob = zeros(length(t),1);
-%%%uQos = zeros(length(t),1);
+sysUPowerInput = zeros(length(timeVector),1);
+%%%uQot = zeros(length(timeVector),1); Legacy code; Replaced with convection instead of step power loss.
+%%%uQob = zeros(length(timeVector),1); Legacy code; Replaced with convection instead of step power loss.
+%%%uQos = zeros(length(timeVector),1); Legacy code; Replaced with convection instead of step power loss.
 
 % Power Input Vector (used to set time power is on or off)
-uQs(1:length(t),1) = Qs/(nnz(Bi));
-%%%uQos(1:length(t)/3,1) = Qos/(nnz(Bi));
+sysUPowerInput(1:length(timeVector),1) = powerInput/(nnz(sysBComponents));
+%%%uQos(1:length(timeVector)/3,1) = powerLossSides/(nnz(sysBComponents));
 
-% uQs((length(t)-length(t)/3):length(t),1) = Qs/(nnz(Bi));
-%uQos((length(t)-length(t)/3):length(t),1) = Qos/(nnz(Bi));
-%%%uQot(1:length(t),1) = Qot/N;
-%%%uQob(1:length(t),1) = Qob/N;
+% sysUPowerInput((length(timeVector)-length(timeVector)/3):length(timeVector),1) = powerInput/(nnz(sysBComponents));
+%uQos((length(timeVector)-length(timeVector)/3):length(timeVector),1) = powerLossSides/(nnz(sysBComponents));
+%%%uQot(1:length(timeVector),1) = powerLossTob/N;
+%%%uQob(1:length(timeVector),1) = powerLossBottom/N;
 
 % Combine inputs for lsim
-%%%u = [uQs uQos uQot uQob];
-u = [uQs];
+%%%sysU = [sysUPowerInput uQos uQot uQob];
+sysU = [sysUPowerInput];
 
-% u = Qs * zeros(length(t),1); %step function; for all time, input = Qs
-% Qsu = Qs * ones(10,1);
-% u(1:10) = Qsu;
+% sysU = powerInput * zeros(length(timeVector),1); %step function; for all time, input = powerInput
+% Qsu = powerInput * ones(10,1);
+% sysU(1:10) = Qsu;
 
 %% Output vectors for SS
 
-C = speye(m*n);
+sysC = speye(m*n);
 
-D = 0;
+sysD = 0;
 
 %% Simulation
 tic
-sys = ss(A,B,C,D);
-y = lsim(sys,u,t,x0);
+sys = ss(A,sysB,sysC,sysD);
+sysOutput = lsim(sys,sysU,timeVector,initialStates);
 timeSim = toc;
 
 %% Reorder results into element grid and plot/print contours
 timecode = num2str(now);
 
 for i = 0:n-1
-    for j = 2:length(t)-1
-        M(:,i+1,j) = y(j,i*n+1:i*n+n);
+    for j = 2:length(timeVector)-1
+        M(:,i+1,j) = sysOutput(j,i*n+1:i*n+n);
     end
 end
 
-tempFinal = y(end,:);
+tempFinal = sysOutput(end,:);
 maxTemp = max(tempFinal);
 minTemp = min(tempFinal);
 
