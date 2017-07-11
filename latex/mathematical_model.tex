@@ -93,6 +93,26 @@ Convection is now added to the model. It is untested, but initial plots show tha
 \section{November 2}
 Continued cleaning up the MATLAB code. Also added a nifty discrete map of the power input shown in \autoref{fig:Nov2Map,it0,pi150}. \autoref{fig:Nov2Dist,it0,pi150} shows the corresponding temperature profile for this input. This input was created with the .csv method. The file is now included in the GitHub repository. The map was created using the pcolor function. I'm still planning on breaking the code into multiple .m files that each handle separate parts. I want to print the input parameters as a text tile and the plots with similar filenames.
 
+\section{July 11}
+After quite a long siesta, I am again intrigued and motivated by this project. My thought exercises have been conducted and I am ready to work. Today I went through the code and cleaned it up a little bit. I changed may of the ambiguous variable names from single letters (which function well in written mathematics) to friendly readable names. e.g. p to materialDensity and C to materialCapacitance. This also resulted in some variables that were reused to have a single instance in the code now. e.g. C was used for both materialCapacitance and the C variable for the State Space matrix.
+
+I feel an urge to pull out all the legacy code related to manually specifying a number of nodes (x and y grid size) now that the .csv file input is working well. With that in mind, I plan on attempting to make the code robust enough to handle a non-square grid, but that project should be farther in the future.
+
+I need to get a control algorithm working for a single element state space model still. I have it working a little bit, but it currently just controls to the initial value, as if the controller is happy staying where it is. Once I have that working well, I imagine that it will be a very small step to get that implemented into the current plate simulation for a single zone (which the current simulation is a single zone). This would conclude the research into making a state space controller for my model with a single zone. At that point I will reassess what is needed and continue from there.
+
+I also feel the need to put an outline to the paper and focus on what I need to gather in order to actually write the thesis and make that portion of this work a reality.
+
+Current list of tasks:
+\begin{itemize}
+	\item Continually optimize the code
+	\item Wrap up work on single element state space control
+	\item Implement state space controller into plate heat model for a single zone
+	\item Begin working on multiple independent parallel heat zones in the model
+	\item Solidify outline for writing portion of thesis
+	\item Begin putting thesis sections into the /textit{Official Saint Martin's University LaTeX Format}
+\end{itemize}
+
+
 \section{Introduction}
 The objective of this paper is to develop and simulate a two dimensional mathematical thermal model for a laminate printed circuit board (PCB) with internal heat generation. The PCB is constructed of layers of FR4 and etched copper laminated together. As shown in \autoref{fig:pcb}, there are multiple, alternating layers of FR4 and etched copper within the PCB. The PCB will generate heat through internally printed copper circuit layers when power is applied to the circuit. The PCB will be simulated as powered in still room temperature air, where the only heat loss is due to convection from the surface of the PCB. The top, bottom, and side surfaces of the PCB are subject to heat loss, however the PCB is very thin compared to its length and width, so it may be simulated as adiabatic along its edge.
 
