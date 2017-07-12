@@ -112,6 +112,11 @@ Current list of tasks:
 	\item Begin putting thesis sections into the \textit{Official Saint Martin's University LaTeX Format}
 \end{itemize}
 
+\section{July 12}
+Changed plots\_script.m file to more intelligently direct the plots to be saved into the current working directory. No longer will it throw an error when a different directory structure is used.
+
+Also, still trying to get gitignore to work properly after committing the auxiliary tex files. I don't particularly want to include these in the repository.
+
 
 \section{Introduction}
 The objective of this paper is to develop and simulate a two dimensional mathematical thermal model for a laminate printed circuit board (PCB) with internal heat generation. The PCB is constructed of layers of FR4 and etched copper laminated together. As shown in \autoref{fig:pcb}, there are multiple, alternating layers of FR4 and etched copper within the PCB. The PCB will generate heat through internally printed copper circuit layers when power is applied to the circuit. The PCB will be simulated as powered in still room temperature air, where the only heat loss is due to convection from the surface of the PCB. The top, bottom, and side surfaces of the PCB are subject to heat loss, however the PCB is very thin compared to its length and width, so it may be simulated as adiabatic along its edge.
