@@ -13,11 +13,11 @@ for j = 1:g
     set(gca,'Ydir','reverse');
     axis equal
 end
-pathStr = '/Users/jonathon/Documents/Thesis/GitRepo/Thermal-Model/latex/figures/';
 tempInitStr = [',it' num2str(tempInitial)];
 powerInputStr = [',pi' num2str(powerInput)];
 nameStr = 'Transient';
-pathStr = strcat(pathStr,simTitle,nameStr,tempInitStr,powerInputStr);
+pathStr = strcat(simTitle,nameStr,tempInitStr,powerInputStr);
+pathStr = fullfile('latex','figures',pathStr);
 if strcmp(prnt,'Yes') == 1
     print(pathStr,'-depsc')
 else
@@ -33,9 +33,9 @@ lbl = [lbl,' seconds'];
 ttl = ['Temperature Distribution at ',lbl]; title(ttl);
 set(gca,'Ydir','reverse');
 axis equal
-pathStr = '/Users/jonathon/Documents/Thesis/GitRepo/Thermal-Model/latex/figures/';
 nameStr = 'Dist';
-pathStr = strcat(pathStr,simTitle,nameStr,tempInitStr,powerInputStr);
+pathStr = strcat(simTitle,nameStr,tempInitStr,powerInputStr);
+pathStr = fullfile('latex','figures',pathStr);
 if strcmp(prnt,'Yes') == 1
     print(pathStr,'-depsc')
 else
@@ -51,9 +51,9 @@ plot(timeVector,sysOutput(:,ceil(m*n/2)),'LineWidth',2)
 xlabel('Time (seconds)'); ylabel('Temperature (Degrees Celcius)');
 legend('Bottom Left','Top Left','Top Right','Bottom Right','Center Element')
 title('Temperature Response')
-pathStr = '/Users/jonathon/Documents/Thesis/GitRepo/Thermal-Model/latex/figures/';
 nameStr = 'Response';
-pathStr = strcat(pathStr,simTitle,nameStr,tempInitStr,powerInputStr);
+pathStr = strcat(simTitle,nameStr,tempInitStr,powerInputStr);
+pathStr = fullfile('latex','figures',pathStr);
 if strcmp(prnt,'Yes') == 1
     print(pathStr,'-depsc')
 else
@@ -80,9 +80,9 @@ xlabel('x position (node)'); ylabel('y position (node)')
 set(gca,'Ydir','reverse'); set(gca,'YTick',[]); set(gca,'XTick',[]);
 axis square
 title('Power Input Map')
-pathStr = '/Users/jonathon/Documents/Thesis/GitRepo/Thermal-Model/latex/figures/';
 nameStr = 'Map';
-pathStr = strcat(pathStr,simTitle,nameStr,tempInitStr,powerInputStr);
+pathStr = strcat(simTitle,nameStr,tempInitStr,powerInputStr);
+pathStr = fullfile('latex','figures',pathStr);
 if strcmp(prnt,'Yes') == 1
     print(pathStr,'-depsc')
 else

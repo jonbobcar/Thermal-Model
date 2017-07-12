@@ -3,7 +3,7 @@ clear; close all;
 % 2D Thermal Model for a thin plate with zoned internal heat generation
 
 %% Printing Options
-simTitle = 'Nov2';
+simTitle = 'Jul12';
 % Prompts whether to print a new plot when the script is run
 % Will plot and save file with some descriptive filename
 % Fix .eps printing to tikz printing someday
