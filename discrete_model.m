@@ -3,11 +3,11 @@ clear; close all;
 % 2D Thermal Model for a thin plate with zoned internal heat generation
 
 %% Printing Options
-simTitle = 'Jul12';
+simTitle = 'Mar 9';
 % Prompts whether to print a new plot when the script is run
 % Will plot and save file with some descriptive filename
 % Fix .eps printing to tikz printing someday
-prompt = 'Print plots to file? ["Yes" / Literally any other input]';
+prompt = 'Output plots to file? ["Yes" / Literally any other input]';
 prnt = input(prompt,'s');
 
 %% Node Control from .csv

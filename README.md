@@ -11,7 +11,7 @@ This repository should contain the following:
 
   https://www.youtube.com/watch?v=q2Zg4fhiMx4
 
-  Git workflow:
+  Git workflow cheatsheet:
 
   	cd to Dir
   	git status
